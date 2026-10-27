@@ -4,7 +4,7 @@
  * @version 1.3.0
  * @description Bulk server management for BetterDiscord. Leave multiple servers, leave entire folders in one click, mark as read, or mute with rate-limit protection and customizable shortcut.
  * @source https://github.com/Mathildeuh/BD-BulkOptions
- * @updateUrl https://raw.githubusercontent.com/Mathildeuh/BD-BulkOptions/main/GuildBulkManager.plugin.js
+ * @updateUrl https://raw.githubusercontent.com/Mathildeuh/BD-BulkOptions/main/betterdiscord/BD-BulkOptions.plugin.js
  */
 
 module.exports = (() => {
