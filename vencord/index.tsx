@@ -6,9 +6,8 @@
 
 import definePlugin, { OptionType } from "@utils/types";
 import { definePluginSettings } from "@api/Settings";
-import { patch } from "@api/ContextMenu";
-import { openModal } from "@utils/modal";
-import { showToast } from "@ui/toasts";
+import { addContextMenuPatch, removeContextMenuPatch } from "@api/ContextMenu";
+import { openModal, ModalRoot, ModalSize } from "@utils/modal";
 import { findByPropsLazy } from "@webpack";
 import {
     GuildStore,
@@ -16,8 +15,7 @@ import {
     UserStore,
     Menu,
     React,
-    ModalRoot,
-    ModalSize
+    showToast
 } from "@webpack/common";
 import "./style.css";
 
@@ -975,7 +973,7 @@ function openBulkManager(options: { initialFolderId?: string; preselectedGuildId
 function promptLeaveFolder(guildIds: string[], folderName: string) {
     const t = getStrings();
     if (!guildIds || guildIds.length === 0) {
-        showToast(t.folderEmptyToast);
+        showToast({ text: t.folderEmptyToast, variant: "critical" });
         return;
     }
 
@@ -1033,7 +1031,7 @@ export default definePlugin({
         window.addEventListener("keydown", this.handleKeyDown);
 
         // 1. Menu contextuel dossier
-        const unpatchFolder = patch("guild-folder-context", (children: any[], props: any) => {
+        const patchFolder = (children: any[], props: any) => {
             const guildIds = extractFolderGuildIds(props);
             if (!guildIds || guildIds.length === 0) return;
             const folderName = extractFolderName(props, guildIds);
@@ -1057,10 +1055,11 @@ export default definePlugin({
                     />
                 </Menu.MenuGroup>
             );
-        });
+        };
+        addContextMenuPatch("guild-folder-context", patchFolder);
 
         // 2. Menu contextuel serveur individuel
-        const unpatchGuild = patch("guild-context", (children: any[], props: any) => {
+        const patchGuild = (children: any[], props: any) => {
             const guildId = props?.guild?.id || props?.guildId;
             const t = getStrings();
 
@@ -1073,9 +1072,13 @@ export default definePlugin({
                     />
                 </Menu.MenuGroup>
             );
-        });
+        };
+        addContextMenuPatch("guild-context", patchGuild);
 
-        this.unpatches.push(unpatchFolder, unpatchGuild);
+        this.unpatches.push(
+            () => removeContextMenuPatch("guild-folder-context", patchFolder),
+            () => removeContextMenuPatch("guild-context", patchGuild)
+        );
     },
 
     stop() {
